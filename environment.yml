@@ -1,0 +1,12 @@
+name: mySearch
+channels:
+- defaults
+dependencies:
+- python=3.8
+- pip
+- pip:
+  - requests
+  - beautifulsoup4
+  - lxml
+  - pandas
+  - flask
