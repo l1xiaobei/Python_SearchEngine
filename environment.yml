@@ -10,3 +10,4 @@ dependencies:
   - lxml
   - pandas
   - flask
+  - pandas

@@ -1,10 +1,10 @@
-from flask import Flask, render_template # 导入flask库：flask是一个轻量级的python web应用框架
+from flask import Flask, render_template,request # 导入flask库：flask是一个轻量级的python web应用框架
 # render_template() 是 flask 提供的一个函数，用于渲染 HTML 模板文件。
 # 它会从 flask 应用的模板目录（默认是 templates 文件夹）中加载 index.html 文件，并将其内容返回给客户端。
 # 如果 index.html 文件中包含模板变量或逻辑，render_template() 会根据传入的参数进行渲染。
-
-import requests # 导入requests库：用于发送 HTTP 请求获取网页内容
-from bs4 import BeautifulSoup # 导入BeautifulSoup库：用于解析 HTML 页面，提取数据
+# 在 Web 开发中，当用户通过 HTML 表单提交数据时，数据会被发送到服务器。Flask 提供了 request 对象来访问这些提交的数据。
+# 在 Flask 中，request 对象是一个全局变量，
+# 它包含了关于当前请求的所有信息，包括请求方法（GET、POST）、请求头、请求体、表单数据、查询参数等。
 
 app = Flask(__name__)
 # Flask 是 flask 框架的主类，用于创建一个 flask 应用实例
@@ -19,6 +19,13 @@ def index():
     return render_template('index.html')
 # 这个装饰器告诉 Flask，当用户访问应用的根 URL（即 http://127.0.0.1:5000/ 或类似的地址）时，调用 index() 函数来处理该请求。
 
+@app.route('/search', methods=['POST'])# 搜索处理路由装饰器
+def search():
+    # 获取表单数据，'query' 是表单输入框的 name 属性值
+    query = request.form['query']
+    # 假设处理搜索的函数为search_engine(query)
+    search_results = search_engine(query)
+    return render_template('results.html', query=query, results=search_results)
 
 if __name__ == '__main__':
     app.run(debug=True) # 启动 Flask 开发服务器，debug=True 表示开启调试模式，方便开发时自动重载和显示错误信息
