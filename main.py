@@ -5,6 +5,8 @@ from flask import Flask, render_template,request # 导入flask库：flask是一�
 # 在 Web 开发中，当用户通过 HTML 表单提交数据时，数据会被发送到服务器。Flask 提供了 request 对象来访问这些提交的数据。
 # 在 Flask 中，request 对象是一个全局变量，
 # 它包含了关于当前请求的所有信息，包括请求方法（GET、POST）、请求头、请求体、表单数据、查询参数等。
+from engine.searchEngine import searchEngine
+
 
 app = Flask(__name__)
 # Flask 是 flask 框架的主类，用于创建一个 flask 应用实例
@@ -19,13 +21,20 @@ def index():
     return render_template('index.html')
 # 这个装饰器告诉 Flask，当用户访问应用的根 URL（即 http://127.0.0.1:5000/ 或类似的地址）时，调用 index() 函数来处理该请求。
 
-@app.route('/search', methods=['POST'])# 搜索处理路由装饰器
+#@app.route('/search', methods=['GET']) # 搜索处理路由装饰器 指定接受GET/POST请求
+@app.route('/search', methods=['GET', 'POST']) # 搜索处理路由装饰器
 def search():
     # 获取表单数据，'query' 是表单输入框的 name 属性值
-    query = request.form['query']
-    # 假设处理搜索的函数为search_engine(query)
-    search_results = search_engine(query)
-    return render_template('results.html', query=query, results=search_results)
+    query = ''
+    if request.method == 'POST':
+        query = request.form.get('query', '')
+    elif request.method == 'GET':
+        query = request.args.get('query', '')
+    #query = request.form['query'] # 如果是GET请求，使用request.args # 如果是POST请求，使用request.form   
+    # 创建search_engine实例
+    search_engine = searchEngine('articles.csv')
+    search_results = search_engine.search(query)
+    return render_template('result.html', query=query, results=search_results)
 
 if __name__ == '__main__':
     app.run(debug=True) # 启动 Flask 开发服务器，debug=True 表示开启调试模式，方便开发时自动重载和显示错误信息
