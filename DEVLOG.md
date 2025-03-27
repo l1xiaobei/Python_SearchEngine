@@ -34,3 +34,19 @@
 - 创建/templates/result.html用于存放搜索结果html文件。
 - 创建.gitignore文件用于避免提交不必要的文件。
 - 修改/main.py文件，通过调用/engine/search.py实现搜索处理的相关功能。
+
+## 0.0.5 (2025-3-27)
+
+### 改动
+
+- 创建/keyword_extractor.py用于提取中英文网页关键词。
+- 创建/articles.db用于作为新的网页数据存储数据库。
+- 修改/test.py为/web_crawler.py。
+- 修改/web_crawler.py文件:
+  - 添加import time、import sqlite3、import readability、from keyword_extractor import extract_keywords；from concurrent.futures import ThreadPoolExecutor
+  - 添加爬虫链接至数据库/articles.db相关代码；
+  - 添加save_to_db()函数用于存储网页数据至数据库；
+  - 添加start_crawler()函数用于启动爬虫；
+  - 将user-agent调整至函数fetch_page中；
+  - 使用try语句重构异常处理代码；
+  - 修改函数parse_page()中提取正文、标题相关代码,添加返回''空字符串功能,添加防止重复爬取同一网页功能。
