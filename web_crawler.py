@@ -121,23 +121,27 @@ def save_to_db(title, url, body, keywords):
 #         print("[提示信息].无法解析页面!")
 
 # 爬虫调度
-def start_crawler(start_urls, max_pages=10):
-    to_crawl = set(start_urls)
-    crawled = set()
+# def start_crawler(start_urls, max_pages=10):
+#     to_crawl = set(start_urls)
+#     crawled = set()
     
-    with ThreadPoolExecutor(max_workers=5) as executor:  # 线程爬取
-        while to_crawl and len(crawled) < max_pages:
-            url = to_crawl.pop()
-            new_links = executor.submit(parse_page, url).result()
-            if new_links:
-                save_to_db(*new_links)
-            crawled.add(url)
+#     with ThreadPoolExecutor(max_workers=5) as executor:  # 线程爬取
+#         while to_crawl and len(crawled) < max_pages:
+#             url = to_crawl.pop()
+#             new_links = executor.submit(parse_page, url).result()
+#             if new_links:
+#                 save_to_db(*new_links)
+#             crawled.add(url)
 
-    print(f"\n🎯 爬取完成，已爬取 {len(crawled)} 个网页")
+#     print(f"\n[提示信息].爬取完成，已爬取 {len(crawled)} 个网页")
 
-# 5️⃣ 启动爬虫
-start_urls = ["https://www.baidu.com"]
-start_crawler(start_urls, max_pages=20)
+def start_crawler(start_urls):
+    title, url, body, keywords = parse_page(start_urls)
+    save_to_db(title, url, body, keywords)
 
-# 6️⃣ 关闭数据库
+# 启动爬虫
+start_urls = "https://www.baidu.com"
+start_crawler(start_urls)
+
+# 关闭数据库
 conn.close()

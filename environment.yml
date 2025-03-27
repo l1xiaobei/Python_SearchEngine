@@ -11,3 +11,8 @@ dependencies:
   - pandas
   - flask
   - pandas
+  - readability-lxml
+  - lxml_html_clean
+  - jieba
+  - nltk
+  - scikit-learn
