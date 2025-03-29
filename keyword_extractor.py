@@ -1,4 +1,3 @@
-# keyword_extractor.py
 import re
 import jieba.analyse
 import nltk
@@ -11,19 +10,21 @@ nltk.download("stopwords")
 # 载入英文停用词
 stop_words = set(stopwords.words("english"))
 
-# 1检测语言（中文 or 英文）
+# 1检测语言为中文还是英文
 def detect_language(text):
     """判断文本是中文还是英文"""
     if re.search("[\u4e00-\u9fff]", text):  # 只要文本中含有中文字符，就认为是中文
         return "chinese"
     return "english"
 
-# 2提取关键词（支持中英文）
+# 2提取关键词
 def extract_keywords(text, topK=5):
     """自动提取关键词（根据语言选择 Jieba 或 TF-IDF）"""
     lang = detect_language(text)
     
     if lang == "chinese":
+        # 加载中文停用词
+        #jieba.analyse.set_stop_words("chinese_stopwords.txt")
         return ",".join(jieba.analyse.extract_tags(text, topK=topK))  # 中文用 jieba
     else:
         return ",".join(tfidf_extract_keywords(text, topK))  # 英文用 TF-IDF
