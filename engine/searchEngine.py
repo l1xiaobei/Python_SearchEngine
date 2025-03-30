@@ -1,50 +1,32 @@
-import pandas
-import os
+from elasticsearch import Elasticsearch
 
-class searchEngine:
-    def __init__(self, csv_file):
-        """
-        初始化SearchEngine类，加载CSV文件
-        :param csv_file: 包含文章数据的CSV文件路径
-        """
-        self.df = pandas.read_csv(csv_file)
-        
+class SearchEngine:
+    def __init__(self, index_name="financial_database"):
+        """连接到 Elasticsearch 并指定索引"""
+        self.es = Elasticsearch("http://localhost:9200")
+        self.index_name = index_name
+
     def search(self, query):
-        """
-        搜索CSV文件中的数据，查找匹配的文章，并将结果保存到HTML文件
-        :param query: 用户的查询词
-        """
-        query = query.lower()  # 转换为小写，确保大小写不敏感
+        """在 Elasticsearch 进行搜索"""
+        if not query:
+            return []
 
-        # 搜索标题和正文中的匹配项
-        results = self.df[self.df['title'].str.contains(query, case=False, na=False) | 
-                          self.df['body'].str.contains(query, case=False, na=False)]
+        es_query = {
+            "query": {
+                "multi_match": {
+                    "query": query,
+                    "fields": ["title", "content"]  # 在标题和正文中搜索
+                }
+            }
+        }
 
-        # 设置输出目录
-        output_dir = './templates/'  # 结果文件存储路径
+        response = self.es.search(index=self.index_name, body=es_query)
 
-        # 如果输出目录不存在，创建它
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-        # 输出 HTML 文件
-        with open(os.path.join(output_dir, 'result.html'), 'w', encoding='utf-8') as f:
-            f.write('<html><head><title>Search Results</title></head><body>')
-            f.write(f'<h1>Search Results for "{query}"</h1>')
-
-            if not results.empty:
-                f.write(f'<p>找到 {len(results)} 个符合条件的结果：</p>')
-                f.write('<ul>')  # 创建一个列表
-
-                # 遍历结果，并写入到 HTML 文件
-                for index, row in results.iterrows():
-                    f.write(f'<li><a href="{row["link"]}" target="_blank">{row["title"]}</a><br>')
-                    f.write(f'<strong>部分正文:</strong> {row["body"][:100]}...<br>')
-                    f.write('-' * 80 + '<br>')  # 用于分隔各个结果
-                f.write('</ul>')  # 结束列表
-            else:
-                f.write('<p>没有找到符合条件的结果。</p>')
-
-            f.write('</body></html>')
-
-        print("搜索结果已保存到 result.html 文件中。")
+        results = []
+        for hit in response["hits"]["hits"]:
+            results.append({
+                "title": hit["_source"]["title"],
+                "url": hit["_source"]["url"],
+                "content": hit["_source"]["content"][:200] + "..."  # 显示前200个字符
+            })
+        return results

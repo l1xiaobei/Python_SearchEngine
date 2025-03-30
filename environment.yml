@@ -16,3 +16,4 @@ dependencies:
   - jieba
   - nltk
   - scikit-learn
+  - elasticsearch

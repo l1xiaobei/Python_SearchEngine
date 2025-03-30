@@ -1,4 +1,4 @@
-# 网页爬取
+from elasticsearch import Elasticsearch
 import requests # 导入requests库：用于发送 HTTP 请求获取网页内容
 from bs4 import BeautifulSoup # 导入BeautifulSoup库：用于解析 HTML 页面，提取数据
 import pandas # 抓取的网页数据利用pandas库转换为csv文件存储
@@ -7,15 +7,16 @@ import sqlite3
 from readability import Document # readability 是一个网页正文提取工具，可以从 HTML 页面中提取出主要内容
 # import jieba
 from concurrent.futures import ThreadPoolExecutor
-from keyword_extractor import extract_keywords  # 引入关键词提取模块
+#from keyword_extractor import extract_keywords  # 引入关键词提取模块
 from collections import deque
+from urllib.parse import urljoin, urlparse
 
-# 连接 SQLite 数据库
-conn = sqlite3.connect("articles.db")
-cursor = conn.cursor() # 创建一个游标对象，执行SQL语句（查询、插入、更新等）
-cursor.execute('''CREATE TABLE IF NOT EXISTS pages 
-                  (id INTEGER PRIMARY KEY, title TEXT, url TEXT, content TEXT, keywords TEXT)''')# 创建一个名为pages的表
-conn.commit() # 提交 SQL 语句的更改，让数据库保存创建的 pages 表
+# # 连接 SQLite 数据库
+# conn = sqlite3.connect("articles.db")
+# cursor = conn.cursor() # 创建一个游标对象，执行SQL语句（查询、插入、更新等）
+# cursor.execute('''CREATE TABLE IF NOT EXISTS pages 
+#                   (id INTEGER PRIMARY KEY, title TEXT, url TEXT, content TEXT, keywords TEXT)''')# 创建一个名为pages的表
+# conn.commit() # 提交 SQL 语句的更改，让数据库保存创建的 pages 表
 
 #字段解释
 #字段名	数据类型	说明
@@ -25,10 +26,22 @@ conn.commit() # 提交 SQL 语句的更改，让数据库保存创建的 pages �
 #content	TEXT	网页正文内容（爬取的文本）
 #keywords	TEXT	关键词（用于搜索优化）
 
-# 设置目标网址
+# 连接到 Elasticsearch
+es = Elasticsearch("http://localhost:9200")
+
+# 检查集群健康状态
+health = es.cluster.health()
+print(f"[提示信息].elasticsearch状态：{health}\n")  # 正常会返回状态信息，如 {"status": "green", ...}
+
+# 定义索引名称（类似数据库的表）
+index_name = "financial_database"
+
+# 如果索引不存在，则创建
+if not es.indices.exists(index=index_name):
+    es.indices.create(index=index_name)
+
 # 访问过的 URL，避免重复爬取
 visited_urls = set()
-# url = 'https://www.baidu.com/'
 
 # 抓取网页函数
 def fetch_page(url):
@@ -47,22 +60,28 @@ def fetch_page(url):
     for i in range(3):  # 最多重试 3 次
         try:
             # response = requests.get(url)        
-            response = requests.get(url, headers=headers, timeout=10)  # 设置超时时间，避免卡住，单位为秒
+            response = requests.get(url, headers=headers, timeout=10, allow_redirects=False)  # 设置超时时间，避免卡住，单位为秒
             response.raise_for_status()  # 该方法用于检查 HTTP 响应状态码，如果 HTTP 状态码不是 200，则抛出异常requests.exceptions.HTTPError
             response.encoding = 'utf-8'
             return response.text
         except requests.exceptions.RequestException as e:
-            print(f"[提示信息].抓取网页时出现错误,第 {i+1} 次请求失败: {e}")
+            print(f"[提示信息].抓取网页时出现错误,第 {i+1} 次请求失败: {e}\n")
             time.sleep(2)  # 休息 2 秒后重试
+    return None
     
-# 使用 BeautifulSoup 解析 HTML 页面
+# 解析 HTML 页面
 def parse_page(base_url,to_crawl):
+
     if not base_url or base_url in visited_urls:
+        print(f"[提示信息].爬取网页网址为空值或该网址位于visited_urls中！\n")
         return None
     visited_urls.add(base_url)# 记录已爬取 URL
+
     html = fetch_page(base_url) 
     if not html:
+        print(f"[提示信息].网页抓取异常，无法解析！\n")
         return None
+    
     soup = BeautifulSoup(html, 'lxml') # 使用lxml解析器解析爬取到的html网页内容
         # 提取标题
         # title = soup.find('title')
@@ -70,14 +89,14 @@ def parse_page(base_url,to_crawl):
         #     title = soup.find('title').get_text()
         # else:
         #     print('[提示信息].抓取不到标题!') # 加一个验证确保标题存在
-    title = soup.find('title').get_text() if soup.find('title') else (print("[提示信息].抓取不到标题!") or '')
+    title = soup.find('title').get_text() if soup.find('title') else (print("[提示信息].抓取不到标题!\n") or '')
         # 提取正文
         # body = soup.find('body')
         # if soup.find('body'):
         #     body = soup.find('body').get_text()
         # else:
         #     print('[提示信息].抓取不到正文!') # 加一个验证确保正文存在
-    body = soup.find('body').get_text() if soup.find('body') else (print("[提示信息].抓取不到正文!") or '')
+    body = soup.find('body').get_text() if soup.find('body') else (print("[提示信息].抓取不到正文!\n") or '')
     # 提取正文 使用readability库
     #doc = Document(html) # 解析 HTML，自动识别正文 
     #body = doc.summary() if doc.summary() else (print("[提示信息].抓取不到正文!") or '')# 获取主要内容（以 HTML 格式输出）
@@ -89,27 +108,42 @@ def parse_page(base_url,to_crawl):
     # 提取关键词
     # keywords = ",".join(jieba.analyse.extract_tags(body, topK=5))
     # 使用 extract_keywords 自动提取关键词（支持中英文）
-    keywords = extract_keywords(body, topK=5)
+    #keywords = extract_keywords(body, topK=5)
     
-    #从页面中提取链接
+ # 从页面中提取链接
     links = []
     for link in soup.find_all('a', href=True):
         url = link['href']
-        # 处理相对路径（如 "/page1" → 转为完整 URL）
-        full_url = requests.compat.urljoin(base_url, url)
+        full_url = urljoin(base_url, url)  # 转换为完整 URL
+        # 解析 URL
+        parsed_url = urlparse(full_url)
+        # 只保留 http 或 https 链接，排除空链接、锚点、JavaScript等
+        if parsed_url.scheme not in ["http", "https"]:
+            continue
+        # 避免重复
         if full_url not in visited_urls and full_url not in to_crawl:
             links.append(full_url)
 
-    print(f"[提示信息].成功抓取: {url}")
-    print(f"[提示信息].标题: {title}\n关键词: {keywords}\n")
+    # 存入 Elasticsearch
+    doc = {
+        "title": title,
+        "url": url,
+        "content": body,
+    }
+    es.index(index=index_name, document=doc)
 
-    return title, url, body, keywords,links
+    print(f"[提示信息].成功抓取: {url}\n")
+    #print(f"[提示信息].标题: {title}\n关键词: {keywords}\n")
+    print(f"[提示信息].标题: {title}\n")
 
-# 存储数据到 SQLite
-def save_to_db(title, url, body, keywords):
-    cursor.execute("INSERT INTO pages (title, url, content, keywords) VALUES (?, ?, ?, ?)",
-                   (title, url, body, keywords))
-    conn.commit()
+
+    return links
+
+# # 存储数据到 SQLite（已弃用，直接在parse_page函数中将网页存储至elasticsearch）
+# def save_to_db(title, url, body, keywords):
+#     cursor.execute("INSERT INTO pages (title, url, content, keywords) VALUES (?, ?, ?, ?)",
+#                    (title, url, body, keywords))
+#     conn.commit()
 
 # def save_page(url):
 #     result = parse_page(url)
@@ -145,28 +179,19 @@ def save_to_db(title, url, body, keywords):
 
 #     print(f"\n[提示信息].爬取完成，已爬取 {len(crawled)} 个网页")
 
-def start_crawler(start_urls):
-    to_crawl = deque(start_urls)  # 用队列存储待爬取 URL（广度优先）
-    visited_urls = set()  # 存储已访问 URL
-    
-    while to_crawl:
-        url = to_crawl.popleft()  # 先进先出，保证广度优先
-        if url in visited_urls:
-            continue  # 避免重复爬取
-        
-        print(f"\n[正在爬取] {url}")
-        result = parse_page(url,to_crawl)  # 解析页面
-        if result:
-            title, url, body, keywords,links = result
-            save_to_db(title, url, body, keywords)
-            visited_urls.add(url)
-
-            # 提取新链接并去重后加入待爬队列
-            new_links = set(links) - visited_urls  # 只添加未访问的
-            to_crawl.extend(new_links)  
-
-    print(f"\n🎯 爬取完成，共爬取 {len(visited_urls)} 个网页")
 # 启动爬虫
+def start_crawler(start_urls):
+    to_crawl = deque(start_urls)  # 队列存储待爬取 URL（广度优先）
+
+    while to_crawl:
+        url = to_crawl.popleft()  # 先进先出，广度优先
+        new_links = parse_page(url, to_crawl)
+        if new_links:
+            to_crawl.extend(new_links)  # 加入新发现的链接
+
+    print(f"[提示信息].爬取完成，共爬取 {len(visited_urls)} 个网页\n")
+
+# 爬取的网址
 start_urls = ["https://www.baidu.com",
               "https://finance.sina.com.cn/",
               "https://www.huxiu.com/channel/115.html",
@@ -175,6 +200,7 @@ start_urls = ["https://www.baidu.com",
               "https://www.thepaper.cn/channel_25951"
               ]
 #百度、新浪财经、虎嗅财经、东方财富、华尔街见闻，澎湃新闻
+
 start_crawler(start_urls)
 
 # 关闭数据库

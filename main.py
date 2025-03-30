@@ -5,7 +5,7 @@ from flask import Flask, render_template,request # 导入flask库：flask是一�
 # 在 Web 开发中，当用户通过 HTML 表单提交数据时，数据会被发送到服务器。Flask 提供了 request 对象来访问这些提交的数据。
 # 在 Flask 中，request 对象是一个全局变量，
 # 它包含了关于当前请求的所有信息，包括请求方法（GET、POST）、请求头、请求体、表单数据、查询参数等。
-from engine.searchEngine import searchEngine
+from engine.searchEngine import SearchEngine
 
 
 app = Flask(__name__)
@@ -15,6 +15,7 @@ app = Flask(__name__)
 # 当你的脚本被其他模块引入时，__name__ 的值为模块名
 # app 是 Flask 应用实例的变量名，你可以使用它来配置应用、定义路由和视图函数等
 # 它是 Flask 应用的核心对象，所有的 Flask 功能都围绕它展开
+search_engine = SearchEngine()  # 创建 Elasticsearch 搜索引擎实例
 
 @app.route('/') # 主页路由装饰器
 def index():
@@ -30,10 +31,9 @@ def search():
         query = request.form.get('query', '')
     elif request.method == 'GET':
         query = request.args.get('query', '')
-    #query = request.form['query'] # 如果是GET请求，使用request.args # 如果是POST请求，使用request.form   
-    # 创建search_engine实例
-    search_engine = searchEngine('articles.csv')
-    search_results = search_engine.search(query)
+    #query = request.form['query'] # 如果是GET请求，使用request.args # 如果是POST请求，使用request.form  
+    #  
+    search_results = search_engine.search(query)  # 在 Elasticsearch 中搜索
     return render_template('result.html', query=query, results=search_results)
 
 if __name__ == '__main__':

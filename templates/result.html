@@ -1,1 +1,27 @@
-<html><head><title>Search Results</title></head><body><h1>Search Results for "1234"</h1><p>没有找到符合条件的结果。</p></body></html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索结果</title>
+</head>
+<body>
+    <h1>搜索结果</h1>
+    <p>查询: "{{ query }}"</p>
+
+    {% if results %}
+        <ul>
+            {% for result in results %}
+                <li>
+                    <h2><a href="{{ result.url }}">{{ result.title }}</a></h2>
+                    <p>{{ result.content }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>没有找到符合条件的结果。</p>
+    {% endif %}
+
+    <a href="/">返回搜索</a>
+</body>
+</html>
