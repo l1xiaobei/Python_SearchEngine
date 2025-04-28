@@ -3,8 +3,8 @@ import requests # 导入requests库：用于发送 HTTP 请求获取网页内容
 from bs4 import BeautifulSoup # 导入BeautifulSoup库：用于解析 HTML 页面，提取数据
 import pandas # 抓取的网页数据利用pandas库转换为csv文件存储
 import time
-import sqlite3
-from readability import Document # readability 是一个网页正文提取工具，可以从 HTML 页面中提取出主要内容
+#import sqlite3
+#from readability import Document # readability 是一个网页正文提取工具，可以从 HTML 页面中提取出主要内容
 # import jieba
 from concurrent.futures import ThreadPoolExecutor
 #from keyword_extractor import extract_keywords  # 引入关键词提取模块

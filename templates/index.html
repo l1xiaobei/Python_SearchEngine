@@ -1,16 +1,229 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>搜索引擎</title>
-    <link rel="stylesheet" href="style.css">  <!-- 引入样式表 -->
+    <title>FinancialToolBox - 您的金融领域工具箱</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --font-serif: 'Cormorant Garamond', serif;
+            --font-sans: 'IBM Plex Sans', sans-serif;
+            --primary-color: #1d1d1f;
+            --secondary-color: #3a3a3c;
+            --accent-color: #6b6b6f;
+            --background: #fcfcfc;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            font-weight: 400;
+            line-height: 1.6;
+            background: var(--background);
+            color: var(--primary-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* Logo 样式 */
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 3.4rem;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--primary-color);
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        /* 搜索区域 */
+        .search-container {
+            margin: 0 auto 4rem;
+            max-width: 720px;
+        }
+
+        .search-box {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+            
+        .search-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1.6rem 2.4rem;
+            border: none;
+            background: var(--card-bg);
+            font-family: var(--font-sans);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            letter-spacing: 0.3px;
+        }
+
+        .search-input::placeholder {
+            color: var(--accent-color);
+            opacity: 0.8;
+        }
+
+        .search-button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            padding: 0 2.8rem;
+            background: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: background 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-button:hover {
+            background: #2d2d2f;
+        }
+
+        /* 功能卡片 */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 0 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 2.4rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: var(--secondary-color);
+            line-height: 1.7;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 2rem 1.5rem;
+            }
+
+            .logo {
+                font-size: 2.4rem;
+                margin-bottom: 2.5rem;
+            }
+
+            .search-box {
+                border-radius: 8px;
+            }
+
+            .search-input {
+                padding: 1.2rem 1.8rem;
+                font-size: 1rem;
+            }
+
+            .search-button {
+                padding: 0 1.8rem;
+                font-size: 0.95rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>mySearch</h1>
-    <form action="/search" method="post">
-        <input type="text" name="query" placeholder="输入搜索内容" required>
-        <button type="submit">搜索</button>
-    </form>
+    <div class="container">
+        <h1 class="logo">FinancialToolBox</h1>
+        
+        <div class="search-container">
+            <form action="/search" method="post" class="search-box">
+                <input type="text" 
+                       name="query" 
+                       class="search-input" 
+                       placeholder="输入股票代码/公司名称/财经关键词..." 
+                       autocomplete="off"
+                       required>
+                <button type="submit" class="search-button">
+                    <i class="fas fa-chart-line"></i>
+                    开始分析
+                </button>
+            </form>
+        </div>
+
+        <!-- <div class="features">
+            <div class="feature-card">
+                <h3>市场动态追踪</h3>
+                <p>实时监控全球主要股指、汇率和大宗商品行情，提供专业级行情图表和技术指标分析工具。</p>
+            </div>
+            <div class="feature-card">
+                <h3>财务数据解析</h3>
+                <p>深度解析上市公司财报，可视化呈现资产负债表、现金流量表和利润表关键指标。</p>
+            </div>
+            <div class="feature-card">
+                <h3>风险评估系统</h3>
+                <p>基于机器学习算法评估投资组合风险，提供压力测试和情景分析专业工具。</p>
+            </div> -->
+        </div>
+    </div>
 </body>
 </html>
