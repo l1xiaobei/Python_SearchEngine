@@ -10,7 +10,9 @@ from concurrent.futures import ThreadPoolExecutor
 #from keyword_extractor import extract_keywords  # 引入关键词提取模块
 from collections import deque
 from urllib.parse import urljoin, urlparse
-
+from datetime import datetime
+from dateutil import parser
+from dateutil.tz import UTC
 # # 连接 SQLite 数据库
 # conn = sqlite3.connect("articles.db")
 # cursor = conn.cursor() # 创建一个游标对象，执行SQL语句（查询、插入、更新等）
@@ -123,16 +125,105 @@ def parse_page(base_url,to_crawl):
         # 避免重复
         if full_url not in visited_urls and full_url not in to_crawl:
             links.append(full_url)
+    
+# ===== 新增时间提取逻辑 =====
+    timestamp = None
+    
+    # 候选的元数据选择器列表（按优先级排序）
+    meta_selectors = [
+        {'property': 'article:published_time'},        # 主流新闻网站
+        {'property': 'og:published_time'},            # Open Graph协议
+        {'itemprop': 'datePublished'},                # Schema.org
+        {'name': 'pubdate'},                          # 通用发布日
+        {'name': 'publishdate'},                      # 常见CMS
+        {'name': 'timestamp'},                        # 论坛类站点
+        {'name': 'date'},                             # 通用日期
+        {'http-equiv': 'date'},                       # HTTP等效头
+        {'name': 'DC.date.issued'},                   # 都柏林核心元数据
+        {'name': 'sailthru.date'},                    # 部分媒体专用
+        {'name': 'parsely-pub-date'},                 # Parsely分析平台
+    ]
+
+    # 方案1：优先检查meta标签
+    for selector in meta_selectors:
+        meta_tag = soup.find('meta', selector)
+        if meta_tag and meta_tag.get('content'):
+            time_str = meta_tag['content'].strip()
+            try:
+                # 使用更智能的时间解析库
+                timestamp = parser.parse(time_str)
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=UTC)  # 默认补充UTC时区
+                break
+            except (ValueError, OverflowError, TypeError) as e:
+                continue
+
+    # 方案2：检查常见时间标签
+    if not timestamp:
+        time_tags = soup.find_all(['time', 'span', 'div', 'p'], class_=[
+            'publish-time',
+            'time',
+            'date',
+            'art-time',
+            'pubtime',
+            'timestamp',
+            'post-date',
+            'article-date',
+            'dateline',
+            'meta-time'
+        ])
+        
+        for tag in time_tags:
+            # 获取最内层文本并清洗
+            raw_time = ' '.join(tag.stripped_strings)
+            if not raw_time:
+                continue
+                
+            # 清洗常见干扰字符
+            clean_time = raw_time.split('|')[0].split('•')[0].strip('发布时间：')
+            try:
+                timestamp = parser.parse(clean_time, fuzzy=True)
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=UTC)
+                break
+            except (ValueError, OverflowError) as e:
+                continue
+
+    # 方案3：检查标题中的时间信息
+    if not timestamp:
+        title_tag = soup.find('title')
+        if title_tag:
+            title_text = title_tag.get_text().strip()
+            try:
+                # 从标题开头/结尾提取时间
+                timestamp = parser.parse(title_text.split('-')[0], fuzzy=True) or \
+                            parser.parse(title_text.split('|')[-1], fuzzy=True)
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=UTC)
+            except:
+                pass
+
+    # 最终回退逻辑
+    if not timestamp:
+        timestamp = datetime.now(UTC)  # 使用带时区的当前时间
+        
+    # 统一转换为UTC时间
+    if timestamp.tzinfo:
+        timestamp = timestamp.astimezone(UTC)
+    else:
+        timestamp = timestamp.replace(tzinfo=UTC)
+    # ===== 时间提取结束 =====
 
     # 存入 Elasticsearch
     doc = {
         "title": title,
         "url": url,
         "content": body,
+        "timestamp": timestamp.isoformat()  # 新增时间字段
     }
     es.index(index=index_name, document=doc)
 
-    print(f"[提示信息].成功抓取: {url}\n")
+    print(f"[提示信息].成功抓取: {url}\n时间戳: {timestamp}")
     #print(f"[提示信息].标题: {title}\n关键词: {keywords}\n")
     print(f"[提示信息].标题: {title}\n")
 

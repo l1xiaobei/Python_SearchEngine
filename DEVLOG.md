@@ -120,3 +120,10 @@
 ### 问题
 
 - 对于/templates/index.html文件，当点击搜索框，搜索框周围会出现一个黑色的轮廓线，但这个轮廓线没有完全包裹搜索框的圆角，导致角落看起来不完整。
+
+## 0.0.10 (2025-4-29)
+
+### 改动
+
+- 修改/web_crawler.py文件:
+  - 添加from datetime import datetime，from dateutil import parser，from dateutil.tz import UTC，修改parse_page()函数，添加提取网页时间戳信息功能。
