@@ -110,6 +110,8 @@
 
 - 一些网站存在反爬机制，爬取的网页链接不准确。需要研究爬取的各个网站的robots.txt。
 
+---
+
 ## 0.0.9 (2025-4-28)
 
 ### 改动
@@ -121,9 +123,30 @@
 
 - 对于/templates/index.html文件，当点击搜索框，搜索框周围会出现一个黑色的轮廓线，但这个轮廓线没有完全包裹搜索框的圆角，导致角落看起来不完整。
 
+---
+
 ## 0.0.10 (2025-4-29)
 
 ### 改动
 
 - 修改/web_crawler.py文件:
   - 添加from datetime import datetime，from dateutil import parser，from dateutil.tz import UTC，修改parse_page()函数，添加提取网页时间戳信息功能。
+
+---
+
+## 0.0.11 (2025-5-14)
+
+**由于不同网站差异较大，难以用一个爬虫覆盖所有网页实现爬取工作，因此决定修改爬虫架构，采取分布式爬虫的形式。**
+
+## 改动
+
+- 重构网络爬虫模块，将/web_crawler.py改为/web_crawler文件夹。文件夹架构为：
+
+  ```xml
+  web_crawler/
+  ├── main.py                          # 调度器，协调各站 adapter 和 pipeline
+  ├── adapters/
+  │   └── sina_adapter.py              # 新浪财经的爬虫适配器
+  ├── pipelines/ 
+  │   └──elasticsearch.py              # 用于将结果存入 Elasticsearch
+  ```

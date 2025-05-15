@@ -30,14 +30,11 @@ from dateutil.tz import UTC
 
 # 连接到 Elasticsearch
 es = Elasticsearch("http://localhost:9200")
-
 # 检查集群健康状态
 health = es.cluster.health()
 print(f"[提示信息].elasticsearch状态：{health}\n")  # 正常会返回状态信息，如 {"status": "green", ...}
-
 # 定义索引名称（类似数据库的表）
 index_name = "financial_database"
-
 # 如果索引不存在，则创建
 if not es.indices.exists(index=index_name):
     es.indices.create(index=index_name)
