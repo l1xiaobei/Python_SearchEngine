@@ -16,4 +16,4 @@ dependencies:
   - jieba
   - nltk
   - scikit-learn
-  - elasticsearch
+  - elasticsearch=8.17.2

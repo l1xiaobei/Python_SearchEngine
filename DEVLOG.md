@@ -150,3 +150,17 @@
   ├── pipelines/ 
   │   └──elasticsearch.py              # 用于将结果存入 Elasticsearch
   ```
+
+---
+
+## 0.0.12 (2025-5-15)
+
+## 改动
+
+- 修改/engine/searchEngine.py代码，添加相关性排序功能。
+- 修改/engine/searchEngine.py、/templates/result.html代码，添加搜索关键词高亮功能。
+- 修改/web_crawler/pipelines/elasticsearch.py代码，添加ik_smart分词器以便于对爬取的文章进行分词处理。（该分词器要求的elasticsearch版本为8.4.1）
+
+### 问题
+
+- 相关性排序功能有待优化。

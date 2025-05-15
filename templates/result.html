@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>FinancialToolBox - 搜索结果</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         /* 共用样式 */
         :root {
@@ -121,6 +121,15 @@
             background: #2d2d2f;
         }
 
+        /* mark 高亮改成金色 */
+        mark {
+            background-color: #1f02343d;
+            color: #760bb8;
+            font-weight: bold;
+            padding: 0 2px;
+            border-radius: 4px;
+        }
+
         /* 复用动画 */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -157,9 +166,9 @@
                 {% for result in results %}
                     <div class="result-card">
                         <h2 class="result-title">
-                            <a href="{{ result.url }}">{{ result.title }}</a>
+                            <a href="{{ result.url }}">{{ result.title | safe }}</a>
                         </h2>
-                        <p class="result-snippet">{{ result.content }}</p>
+                        <p class="result-snippet">{{ result.content | safe }}</p>
                         <div class="result-url">{{ result.url }}</div>
                     </div>
                 {% endfor %}

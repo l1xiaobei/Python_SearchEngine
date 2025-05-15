@@ -57,7 +57,7 @@ class SinaFinanceAdapter(BaseAdapter):
                 "url": url,
                 "source": source,
                 "content": content,
-                "timestamp": timestamp.isoformat() if timestamp else None
+                "timestamp": timestamp.isoformat(timespec='seconds') if timestamp else None # 将时间转换为iso 8601标准格式，输出截止到秒
                 
             }
 
