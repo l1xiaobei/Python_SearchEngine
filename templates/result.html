@@ -91,6 +91,12 @@
             color: var(--secondary-color);
         }
 
+        .result-meta {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
         .result-snippet {
             color: var(--secondary-color);
             line-height: 1.7;
@@ -122,13 +128,21 @@
         }
 
         /* mark 高亮改成金色 */
-        mark {
+        /* mark {
             background-color: #1f02343d;
             color: #760bb8;
             font-weight: bold;
             padding: 0 2px;
             border-radius: 4px;
-        }
+        } */
+        mark {
+            background-color: #eee2ff; /* 更淡雅、不打断阅读 */
+            color: #760bb8;
+            font-weight: bold;
+            border-radius: 0;
+            padding: 0;
+        } /*修改高亮显示，避免单字高亮时出现颜色块断裂或样式不一致*/
+
 
         /* 复用动画 */
         @keyframes fadeIn {
@@ -168,6 +182,9 @@
                         <h2 class="result-title">
                             <a href="{{ result.url }}">{{ result.title | safe }}</a>
                         </h2>
+                        <div class="result-meta">
+                            来源：{{ result.source }}　|　时间：{{ result.timestamp[:10] }} | [DEBUG]相关性得分：{{ result.score }}
+                        </div>
                         <p class="result-snippet">{{ result.content | safe }}</p>
                         <div class="result-url">{{ result.url }}</div>
                     </div>
