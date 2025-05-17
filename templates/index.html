@@ -1,45 +1,83 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
+<!-- !DOCTYPE 是一种标准通用标记语言的文档类型声明，
+它的目的是要告诉标准通用标记语言解析器，
+它应该使用什么样的文档类型定义（DTD）来解析文档。-->
 <html lang="zh-CN">
+<!-- lang属性（例如lang="zh-cn"）的作用是声明网页内容的默认语言 -->
 <head>
-    <meta charset="UTF-8">
+<!--HTML 的 <head> 标签是网页的 “元信息容器”，用于定义文档的配置信息、
+资源引用和其他非可视内容。它位于 <html> 标签内，<body> 标签之前，不会直接显示在页面上，但对网页的运行和展示至关重要。
+常见子标签：
+标签	用途	示例
+<meta>	定义网页元数据（字符编码、视口、SEO 描述等）<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>	设置网页标题（显示在浏览器标签页和搜索引擎结果中）	<title>我的网站</title>
+<link>	链接外部资源（CSS 文件、图标等）<link rel="stylesheet" href="style.css">
+<style>	嵌入 CSS 样式（内联样式表）<style>body { color: red; }</style>
+<script> 嵌入或引用 JavaScript 代码 <script src="app.js"></script> <script>console.log('Hello')</script>-->
+    <meta charset="UTF-8"> <!--定义文档的字符编码为UTF-8-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--视窗设置，实现移动端适配
+`width=device-width`指定视口的宽度等于设备的宽度
+`initial-scale=1.0`，初始缩放比例为1，即不进行任何缩放，保持原始尺寸。
+-->
     <title>FinancialToolBox - 您的金融领域工具箱</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!--link href用于指定链接的外部资源的 URL 路径 rel用于定义当前文档与链接资源之间的关系 
+其中，rel 是必填属性：没有 rel 的 <link> 标签无效。
+Cormorant Garamond：衬线字体，指定了 600（半粗体）和 700（粗体）两种字重。
+IBM Plex Sans：无衬线字体，指定了 400（常规）、500（中等）、600（半粗体）三种字重。
+display=swap 表示如果字体未加载完成，先显示备用字体，待加载完成后替换（避免页面长时间空白）。、
+下面这个加载 Font Awesome 6.0.0 图标库，通过 CSS 类名即可使用（如 <i class="fas fa-chart-line"></i>）
+CDN 加速：通过 cdnjs.cloudflare.com 分发，提升加载速度和缓存利用率。
+-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<!--
+:root定义全局 CSS 变量（自定义属性），供整个网页使用。
+--font-serif 是一个 CSS 自定义变量（以 -- 开头）
+通过 var(--font-serif) 函数调用该变量。
+`serif`在这里的作用就是当`'Cormorant Garamond`这个字体无法加载时，浏览器会使用系统默认的衬线字体。
+-->
     <style>
         :root {
-            --font-serif: 'Cormorant Garamond', serif;
-            --font-sans: 'IBM Plex Sans', sans-serif;
+
+            --font-serif: 'Cormorant Garamond', serif; /* 衬线字体 */
+            --font-sans: 'IBM Plex Sans', sans-serif; /* 无衬线字体 */
             --primary-color: #1d1d1f;
             --secondary-color: #3a3a3c;
             --accent-color: #6b6b6f;
             --background: #fcfcfc;
             --card-bg: #ffffff;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+/*
+盒模型由内容(content)、填充(padding)、边框(border)、边界(margin)组成
+全局重置网页元素的默认样式并统一盒模型计算方式
+*/
+        * {  /* 选中所有 HTML 元素 */
+            margin: 0;  /*清除浏览器为元素添加的默认外边距（margin）和内边距（padding）。*/
+            padding: 0; 
+            box-sizing: border-box; /* 盒模型类型定义，计算包含边框和内边距 border-box 宽度 = 内容宽度 + 内边距 + 边框*/
         }
-
+/*定义网页 <body> 元素的全局样式，实现一个现代、自适应、居中布局 的页面基础框架*/
         body {
-            font-family: var(--font-sans);
-            font-weight: 400;
-            line-height: 1.6;
-            background: var(--background);
-            color: var(--primary-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 3rem 2rem;
+            font-family: var(--font-sans);  /* 使用 CSS 变量定义的无衬线字体（如 IBM Plex Sans） */
+            font-weight: 400; /* 常规字重（非粗体） */
+            line-height: 1.6;  /* 行高为字体大小的 1.6 倍（提升可读性） */
+            background: var(--background); /* 页面背景色 */
+            color: var(--primary-color);   /* 主文本颜色 */
+            min-height: 100vh; /* 最小高度为视口高度（防止内容过少时页面底部悬空） */
+            display: flex;   /* 启用 Flex 弹性布局 */
+            flex-direction: column; /* 垂直排列子元素（从上到下） */
+            align-items: center;   /* 子元素水平居中 */
+            padding: 3rem 2rem;   /* 上下 3rem（约 48px），左右 2rem（约 32px）为页面内容创造呼吸空间，避免内容紧贴视口边缘。 */
         }
 
+/*.container 是前端开发中常用的一个 CSS 类名，
+通常用于包裹网页的主要内容区域，起到 布局容器 的作用。
+它的核心目标是 控制内容的宽度、居中和响应式适配，是构建现代网页布局的基础组件。*/
         .container {
-            width: 100%;
-            max-width: 1000px;
-            animation: fadeIn 0.8s ease-out;
+            width: 100%; /* 宽度充满父容器 */ 
+            max-width: 1000px; /* 最大宽度限制为 1000px */
+            animation: fadeIn 0.8s ease-out; /* 淡入动画效果 调用名为 fadeIn 的关键帧动画 动画持续 0.8 秒 ease-out是缓动函数：动画开始时快，结尾变慢*/
         }
 
         /* Logo 样式 */
@@ -191,6 +229,7 @@
         }
     </style>
 </head>
+<!--HTML 的 <body> 标签是网页内容的 “主体容器”，它定义了用户在浏览器中看到和交互的所有可见内容-->
 <body>
     <div class="container">
         <h1 class="logo">FinancialToolBox</h1>

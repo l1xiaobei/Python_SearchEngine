@@ -19,7 +19,7 @@ search_engine = SearchEngine()  # 创建 Elasticsearch 搜索引擎实例
 
 @app.route('/') # 主页路由装饰器
 def index():
-    return render_template('index.html')
+    return render_template('index.html') # 返回渲染后的 HTML
 # 这个装饰器告诉 Flask，当用户访问应用的根 URL（即 http://127.0.0.1:5000/ 或类似的地址）时，调用 index() 函数来处理该请求。
 
 #@app.route('/search', methods=['GET']) # 搜索处理路由装饰器 指定接受GET/POST请求
