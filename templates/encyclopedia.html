@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>财经百科</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --font-serif: 'Cormorant Garamond', serif;
+      --font-sans: 'IBM Plex Sans', sans-serif;
+      --primary-color: #1d1d1f;
+      --secondary-color: #3a3a3c;
+      --accent-color: #6b6b6f;
+      --background: #fcfcfc;
+      --card-bg: #ffffff;
+    }
+
+    /* 重置和基础 */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--background);
+      color: var(--primary-color);
+      padding: 3rem 2rem 4rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* 顶部容器: 返回首页和标题 */
+    .top-bar {
+      position: relative;
+      display: flex;
+      justify-content: center; /* 标题居中 */
+      align-items: flex-start; /* 顶部对齐 */
+      margin-bottom: 2rem;
+    }
+
+    /* 返回首页按钮，左侧绝对定位 */
+    .back-button {
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 1rem 2rem;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      transition: background 0.3s ease;
+      user-select: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .back-button:hover {
+      background: #2d2d2f;
+    }
+
+    /* 标题居中 */
+    h1.logo {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      margin: 0;
+      line-height: 1;
+    }
+
+    /* 字母导航 */
+    .letter-nav {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .letter-nav a {
+      display: inline-block;
+      margin: 0.25rem 0.4rem;
+      font-weight: 500;
+      color: var(--accent-color);
+      text-decoration: none;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+      transition: all 0.2s ease;
+    }
+
+    .letter-nav a:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    /* 词条区域 */
+    .entry-section {
+      margin-bottom: 3rem;
+    }
+
+    .letter-header {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 700;
+      border-bottom: 2px solid rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .entry-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .entry-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      /*padding: 1.2rem 1.6rem;*/
+      padding: 0.8rem 1rem;
+      width: calc(16.7% - 1rem);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease;
+    }
+
+
+    .entry-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .entry-card a {
+      text-decoration: none;
+      font-weight: 600;
+      color: var(--primary-color);
+      font-size: 0.95rem;
+    }
+
+    .entry-card p {
+      color: var(--secondary-color);
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+      line-height: 1.4;
+    }
+
+    /* 返回顶部按钮样式 */
+    .scroll-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 48px;
+      height: 48px;
+      background: white;
+      border: 2px solid black;
+      color: black;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+
+    .scroll-top:hover {
+      border-color: #333;
+    }
+
+    /* 黑色箭头，上箭头，用svg */
+    #back-to-top svg {
+      fill: black;
+      width: 16px;
+      height: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .entry-card {
+        width: 100%;
+      }
+      h1.logo {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('index') }}" class="back-button">
+      <i class="fas fa-arrow-left"></i>
+      返回首页
+    </a>
+    <h1 class="logo">财经百科</h1>
+  </div>
+
+  <div class="letter-nav">
+    {% for letter in all_letters %}
+      <a href="#{{ letter }}">{{ letter }}</a>
+    {% endfor %}
+  </div>
+
+  {% for letter, entries in entries_by_letter.items() %}
+    {% if entries %}
+      <div class="entry-section" id="{{ letter }}">
+        <div class="letter-header">{{ letter }}</div>
+        <div class="entry-list">
+          {% for entry in entries %}
+            <div class="entry-card">
+              <a href="{{ url_for('encyclopedia_entry', entry_id=entry.id) }}">{{ entry.title }}</a>
+              <p>{{ entry.summary }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+
+  <!-- 返回顶部按钮 -->
+  <div class="scroll-top" onclick="scrollToTop()" title="返回顶部">
+    <i class="fas fa-arrow-up"></i>
+  </div>
+
+  <script>
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

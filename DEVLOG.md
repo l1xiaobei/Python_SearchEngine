@@ -185,3 +185,14 @@
 ### 改动
 
 - 为部分代码添加了注释，第一阶段目标基本实现。
+
+## 0.1.1 (2025-5-21)
+
+### 新增功能：
+  1. 主页面显示当前时间
+  2. 主页面财经百科模块
+
+### 改动
+
+- 修改/templates/index.html，添加了主页面显示当前时间的功能。
+- 添加了财经百科功能，添加了/templates/encyclopedia.html和/templates/entry_detail.html代码;修改/main.py代码，添加了两个新增html页面的相关路由;修改了/templates/index.html，增加了进入百科页面的相关逻辑;添加了/data文件夹和/data/entries.json文件，用于存储百科相关内容。

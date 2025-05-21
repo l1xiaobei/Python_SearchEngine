@@ -7,6 +7,12 @@ from flask import Flask, render_template,request # 导入flask库：flask是一�
 # 它包含了关于当前请求的所有信息，包括请求方法（GET、POST）、请求头、请求体、表单数据、查询参数等。
 from engine.searchEngine import SearchEngine
 
+from collections import defaultdict 
+#defaultdict 是 Python 中 collections 模块提供的一个字典子类，它在处理不存在的键时提供默认值，避免了 KeyError 异常
+from pypinyin import lazy_pinyin, Style # 添加pypinyin库，方便实现按首字母分组词条
+import string
+import json
+import os
 
 app = Flask(__name__)
 # Flask 是 flask 框架的主类，用于创建一个 flask 应用实例
@@ -35,6 +41,40 @@ def search():
     #  
     search_results = search_engine.search(query)  # 在 Elasticsearch 中搜索
     return render_template('result.html', query=query, results=search_results)
+
+# 加载 JSON 词条数据
+def load_entries():
+    path = os.path.join(os.path.dirname(__file__), './data/entries.json')
+    with open(path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+# 财经百科页面 路由
+@app.route('/encyclopedia')
+def encyclopedia():
+    data = load_entries()
+    # 按拼音首字母分组
+    grouped = defaultdict(list)
+    for entry_id, entry in data.items():
+        if not entry['title']:
+            continue
+        # 提取首字拼音字母
+        first_letter = lazy_pinyin(entry['title'][0], style=Style.FIRST_LETTER)[0].upper()
+        key = first_letter if 'A' <= first_letter <= 'Z' else '#'
+        grouped[key].append({"id": entry_id, "title": entry["title"]}) # 非字母归为“#”
+    # 所有导航字母 A-Z
+    all_letters = list(string.ascii_uppercase) + ['#']
+    # 排序
+    grouped_sorted = dict(sorted(grouped.items()))
+    return render_template('encyclopedia.html', entries_by_letter=grouped_sorted, all_letters=all_letters)
+
+# 词条详情页路由
+@app.route('/encyclopedia/<entry_id>')
+def encyclopedia_entry(entry_id):
+    data = load_entries()
+    entry = data.get(entry_id)
+    if not entry:
+        return "词条不存在", 404
+    return render_template('entry_detail.html', entry=entry)
 
 if __name__ == '__main__':
     app.run(debug=True) # 启动 Flask 开发服务器，debug=True 表示开启调试模式，方便开发时自动重载和显示错误信息
