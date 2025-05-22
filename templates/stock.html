@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>股市资讯 - FinancialToolBox</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --font-serif: 'Cormorant Garamond', serif;
+      --font-sans: 'IBM Plex Sans', sans-serif;
+      --font-song: 'SimSun', serif;
+      --primary-color: #1d1d1f;
+      --background: #fcfcfc;
+      --card-bg: #ffffff;
+      --accent-color: #6b6b6f;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--background);
+      color: var(--primary-color);
+      padding: 3rem 2rem 4rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .top-bar {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .back-button {
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.6rem 1.2rem;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      transition: background 0.3s ease;
+      user-select: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    h1.logo {
+      font-family: var(--font-serif);
+      font-size: 2.8rem;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .date-label {
+      font-size: 1rem;
+      color: #555;
+      margin-top: 0.5rem;
+    }
+
+    .index-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .index-box {
+      background: var(--card-bg);
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      min-width: 260px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .up {
+      color: #e53935;
+    }
+
+    .down {
+      color: #1e88e5;
+    }
+
+    .news-section-title {
+      font-family: var(--font-song);
+      font-size: 2.0rem;
+      font-weight: 5000;
+      margin-bottom: 1rem;
+    }
+
+    .latest-news {
+      background: var(--card-bg);
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .policy-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .policy-card {
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 1rem;
+    }
+
+    .policy-title {
+      font-family: var(--font-song);
+      font-size: 1.15rem;
+      margin: 0;
+    }
+
+    .policy-title a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .policy-title a:hover {
+      text-decoration: underline;
+    }
+
+    .policy-meta {
+      color: var(--accent-color);
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+    }
+
+    .policy-content {
+      font-family: var(--font-song);
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .no-results {
+      color: #888;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+      .index-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a href="{{ url_for('index') }}" class="back-button">
+      <i class="fas fa-arrow-left"></i>
+      返回首页
+    </a>
+    <div>
+      <h1 class="logo">股市资讯</h1>
+      <div id="data-date" class="date-label">数据日期加载中...</div>
+    </div>
+  </div>
+
+  <div class="market-index">
+    <div id="market-index">
+      <div class="index-box">加载中...</div>
+    </div>
+  </div>
+
+  <!-- 新闻标题放在卡片框外 -->
+  <h2 class="news-section-title">最新新闻播报</h2>
+
+  <!-- 最新新闻卡片内容 -->
+  <div class="latest-news">
+    <div class="policy-list">
+      {% if news %}
+          {% for item in news %}
+          <div class="policy-card">
+              <h2 class="policy-title">
+                  <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a>
+              </h2>
+              <div class="policy-meta">
+                  <span>发布日期：{{ item.timestamp }}</span>
+                  <span style="margin-left: 1rem;">来源：{{ item.source }}</span>
+              </div>
+              <p class="policy-content">{{ item.content }}</p>
+          </div>
+          {% endfor %}
+      {% else %}
+          <div class="no-results">
+              <p>暂无最新新闻</p>
+          </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

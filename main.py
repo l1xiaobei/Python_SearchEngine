@@ -1,4 +1,4 @@
-from flask import Flask, render_template,request # 导入flask库：flask是一个轻量级的python web应用框架
+from flask import Flask, render_template,request,jsonify # 导入flask库：flask是一个轻量级的python web应用框架
 # render_template() 是 flask 提供的一个函数，用于渲染 HTML 模板文件。
 # 它会从 flask 应用的模板目录（默认是 templates 文件夹）中加载 index.html 文件，并将其内容返回给客户端。
 # 如果 index.html 文件中包含模板变量或逻辑，render_template() 会根据传入的参数进行渲染。
@@ -6,13 +6,27 @@ from flask import Flask, render_template,request # 导入flask库：flask是一�
 # 在 Flask 中，request 对象是一个全局变量，
 # 它包含了关于当前请求的所有信息，包括请求方法（GET、POST）、请求头、请求体、表单数据、查询参数等。
 from engine.searchEngine import SearchEngine
-
+from elasticsearch import Elasticsearch
 from collections import defaultdict 
 #defaultdict 是 Python 中 collections 模块提供的一个字典子类，它在处理不存在的键时提供默认值，避免了 KeyError 异常
 from pypinyin import lazy_pinyin, Style # 添加pypinyin库，方便实现按首字母分组词条
 import string
 import json
 import os
+# import tushare as ts # TuShare 是一个基于 Python 的财经数据接口库，提供丰富的中国股票市场、宏观经济、金融新闻等数据。
+from jqdatasdk import * # 聚宽joinQuant
+from api_routes import api
+import requests
+from bs4 import BeautifulSoup
+
+# from selenium import webdriver
+# from selenium.webdriver.edge.options import Options
+# from selenium.webdriver.edge.service import Service
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# import datetime
+# import time
 
 app = Flask(__name__)
 # Flask 是 flask 框架的主类，用于创建一个 flask 应用实例
@@ -22,6 +36,12 @@ app = Flask(__name__)
 # app 是 Flask 应用实例的变量名，你可以使用它来配置应用、定义路由和视图函数等
 # 它是 Flask 应用的核心对象，所有的 Flask 功能都围绕它展开
 search_engine = SearchEngine()  # 创建 Elasticsearch 搜索引擎实例
+# # 设置 Token
+# ts.set_token('9e57ea1cab1acb53d3e20be04c81acc86878875b011062a20fbc0f71')
+# pro = ts.pro_api()
+# 登录聚宽
+auth('13971463828','lhysS233')
+app.register_blueprint(api)
 
 @app.route('/') # 主页路由装饰器
 def index():
@@ -44,7 +64,7 @@ def search():
 
 # 加载 JSON 词条数据
 def load_entries():
-    path = os.path.join(os.path.dirname(__file__), './data/entries.json')
+    path = os.path.join(os.path.dirname(__file__), './static/entries.json')
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -75,6 +95,41 @@ def encyclopedia_entry(entry_id):
     if not entry:
         return "词条不存在", 404
     return render_template('entry_detail.html', entry=entry)
+
+# 股市行情页路由
+@app.route('/stock')
+def stockToday():
+    news_data = search_engine.getNews(size=10)
+    return render_template('stock.html',news=news_data)
+
+# @app.route('/api/latest_news')
+# def latest_news():
+#     news_data = fetch_latest_news()  
+#     return jsonify(news_data)
+
+# def fetch_latest_news():
+#     #到时候从elasticsearch数据库里面抓最新最热的数据吧
+
+@app.route('/macro', methods=['GET', 'POST'])
+def macroEco():
+    # 获取分页参数（默认第1页）
+    page = request.args.get('page', 1, type=int)
+    # 指定政策来源
+    target_source = "政策库"
+    # 获取分页数据
+    result = search_engine.getMacro(
+        source=target_source,
+        page=page,
+        per_page=10  # 每页显示10条
+    )   
+    return render_template(
+        'macro.html',  # 对应的模板文件
+        policies=result['policies'],
+        current_page=result['pagination']['current_page'],
+        total_pages=result['pagination']['total_pages'],
+        target_source=target_source,
+        base_url="/macro"
+    )
 
 if __name__ == '__main__':
     app.run(debug=True) # 启动 Flask 开发服务器，debug=True 表示开启调试模式，方便开发时自动重载和显示错误信息

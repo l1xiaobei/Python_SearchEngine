@@ -1,7 +1,9 @@
 from adapters.sina_adapter import SinaFinanceAdapter
+from adapters.gov_adpater import GovAdapter
 from pipelines.elasticsearch import ElasticsearchPipeline
 
 adapters = [
+    GovAdapter(),
     SinaFinanceAdapter(),
     # 可添加更多 adapter
 ]

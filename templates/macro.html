@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ target_source }}最新政策 - FinancialToolBox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --font-serif: 'Cormorant Garamond', serif;
+            --font-sans: 'IBM Plex Sans', sans-serif;
+            --primary-color: #1d1d1f;
+            --secondary-color: #3a3a3c;
+            --accent-color: #6b6b6f;
+            --background: #fcfcfc;
+            --card-bg: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--background);
+            color: var(--primary-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            width: 100%;
+            position: relative;
+        }
+
+        .header-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 700;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .policy-list {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .policy-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .policy-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .policy-title {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .policy-title a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .policy-title a:hover {
+            text-decoration: underline;
+        }
+
+        .policy-meta {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .policy-content {
+            color: var(--secondary-color);
+            line-height: 1.7;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .page-link {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--primary-color);
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .page-link:hover,
+        .page-active {
+            background: var(--primary-color);
+            color: white;
+            border-color: transparent;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            z-index: 1;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 2rem 1rem; }
+            .header-title { font-size: 1.5rem; }
+            .policy-card { padding: 1.5rem; }
+            .page-link { padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="/" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                返回首页
+            </a>
+            <h1 class="header-title">最新政策</h1>
+        </div>
+
+        <div class="policy-list">
+            {% if policies %}
+                {% for policy in policies %}
+                <div class="policy-card">
+                    <h2 class="policy-title">
+                        <a href="{{ policy.url }}" target="_blank" rel="noopener">{{ policy.title }}</a>
+                    </h2>
+                    <div class="policy-meta">
+                        发布日期：{{ policy.timestamp }}
+                    </div>
+                    <p class="policy-content">{{ policy.content }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">
+                    <p>暂无{{ target_source }}的最新政策信息</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if current_page > 1 %}
+                <a href="{{ base_url }}?page={{ current_page-1 }}" class="page-link">上一页</a>
+            {% endif %}
+
+            {% for page_num in range(1, total_pages + 1) %}
+                <a href="{{ base_url }}?page={{ page_num }}" 
+                   class="page-link {% if page_num == current_page %}page-active{% endif %}">
+                   {{ page_num }}
+                </a>
+            {% endfor %}
+
+            {% if current_page < total_pages %}
+                <a href="{{ base_url }}?page={{ current_page+1 }}" class="page-link">下一页</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

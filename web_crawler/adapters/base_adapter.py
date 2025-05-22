@@ -10,6 +10,7 @@ from datetime import datetime,timezone
 from dateutil import parser
 from abc import ABC, abstractmethod  # 引入抽象基类模块 Abstract Base Classes
 from bs4 import BeautifulSoup # 导入BeautifulSoup库：用于解析 HTML 页面，提取数据
+import time
 
 class BaseAdapter(ABC):
     """
