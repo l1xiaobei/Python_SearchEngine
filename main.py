@@ -49,18 +49,26 @@ def index():
 # 这个装饰器告诉 Flask，当用户访问应用的根 URL（即 http://127.0.0.1:5000/ 或类似的地址）时，调用 index() 函数来处理该请求。
 
 #@app.route('/search', methods=['GET']) # 搜索处理路由装饰器 指定接受GET/POST请求
-@app.route('/search', methods=['GET', 'POST']) # 搜索处理路由装饰器
+@app.route('/search', methods=['GET', 'POST'])
 def search():
-    # 获取表单数据，'query' 是表单输入框的 name 属性值
     query = ''
+    source = ''
+
     if request.method == 'POST':
-        query = request.form.get('query', '')
-    elif request.method == 'GET':
-        query = request.args.get('query', '')
-    #query = request.form['query'] # 如果是GET请求，使用request.args # 如果是POST请求，使用request.form  
-    #  
-    search_results = search_engine.search(query)  # 在 Elasticsearch 中搜索
-    return render_template('result.html', query=query, results=search_results)
+        query = request.form.get('query', '').strip()
+        source = request.form.get('source', '').strip()
+    else:  # GET 请求
+        query = request.args.get('query', '').strip()
+        source = request.args.get('source', '').strip()
+
+    # 假设 search_engine.search 支持传入 source 过滤参数
+    # 如果没有该功能，需要你自己实现过滤逻辑
+    if source:
+        search_results = search_engine.search(query, source=source)
+    else:
+        search_results = search_engine.search(query)
+
+    return render_template('result.html', query=query, source=source, results=search_results)
 
 # 加载 JSON 词条数据
 def load_entries():
@@ -132,4 +140,4 @@ def macroEco():
     )
 
 if __name__ == '__main__':
-    app.run(debug=True) # 启动 Flask 开发服务器，debug=True 表示开启调试模式，方便开发时自动重载和显示错误信息
+    app.run(debug=True) #   ，debug=True 表示开启调试模式，方便开发时自动重载和显示错误信息

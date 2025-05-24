@@ -6,27 +6,40 @@ class SearchEngine:
         self.es = Elasticsearch("http://localhost:9200")
         self.index_name = index_name
 
-    def search(self, query):
-        """在 Elasticsearch 中进行搜索（含相关性排序和高亮）"""
+    def search(self, query, source=None):
+        """在 Elasticsearch 中进行搜索（含相关性排序、高亮和来源筛选）"""
         if not query:
             return []
+
+        # 构建基本查询
+        base_query = {
+            "multi_match": {
+                "query": query,
+                "fields": ["title^3", "content"]
+            }
+        }
+
+        # 如果有指定来源，使用 bool + filter 包装
+        if source:
+            query_clause = {
+                "bool": {
+                    "must": [base_query],
+                    "filter": [{"term": {"source": source}}]
+                }
+            }
+        else:
+            query_clause = base_query
 
         es_query = {
             "query": {
                 "function_score": {
-                    "query": {
-                        "multi_match": {
-                            "query": query,
-                            "fields": ["title^3", "content"]  # 标题加权
-                        }
-                    },# 这个原始 _score 就是 Elasticsearch 的文本相关性得分。
-                    # "boost_mode": "sum",
-                    "boost_mode": "multiply", # 最终得分 = 文本匹配得分 × 时间得分
-                    "score_mode": "sum", # 合并多个function 但这里只有一个，故score_mode: "sum" 就是函数得分 = 时间得分
+                    "query": query_clause,
+                    "boost_mode": "multiply",
+                    "score_mode": "sum",
                     "functions": [
                         {
                             "gauss": {
-                                "timestamp": {  # 按发布时间衰减分数（越新越高）
+                                "timestamp": {
                                     "origin": "now",
                                     "scale": "10d",
                                     "decay": 0.5
@@ -40,9 +53,7 @@ class SearchEngine:
                 "pre_tags": ["<mark>"],
                 "post_tags": ["</mark>"],
                 "fields": {
-                    "title": {
-
-                    },
+                    "title": {},
                     "content": {
                         "fragment_size": 200,
                         "number_of_fragments": 1
@@ -55,18 +66,20 @@ class SearchEngine:
 
         results = []
         for hit in response["hits"]["hits"]:
-            source = hit["_source"]
+            source_data = hit["_source"]
             highlight = hit.get("highlight", {})
 
             results.append({
-                "title": highlight.get("title", [source["title"]])[0],
-                "url": source["url"],
-                "content": highlight.get("content", [source["content"][:200]])[0] + "...",
-                "source": source.get("source", ""),
-                "timestamp": source.get("timestamp", "").replace("T", " ")[:16], # 只保留日期部分 # 更新 保留到分钟ver0.1.2
-                "score": hit["_score"]  # [DEBUG] 查看相关性得分
+                "title": highlight.get("title", [source_data["title"]])[0],
+                "url": source_data["url"],
+                "content": highlight.get("content", [source_data["content"][:200]])[0] + "...",
+                "source": source_data.get("source", ""),
+                "timestamp": source_data.get("timestamp", "").replace("T", " ")[:16],
+                "score": hit["_score"]
             })
+
         return results
+
 
     def getMacro(self, source, page=1, per_page=10):
         """获取指定来源的最新政策（带分页）"""

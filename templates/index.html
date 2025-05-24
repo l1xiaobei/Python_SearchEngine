@@ -60,27 +60,28 @@
     }
 
     .search-box {
-      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+      /*box-shadow: 0 8px 32px rgba(0,0,0,0.05);*/
       transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
-    .search-box:hover {
-      transform: translateY(-2px);
+      padding: 1rem;
+      background: var(--card-bg);
     }
 
     .search-input {
       width: 100%;
-      padding: 1.6rem 2.4rem;
-      border: none;
+      padding: 1.2rem 1.4rem;
+      border: 1px solid #ddd;
       background: var(--card-bg);
       font-family: var(--font-sans);
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 500;
       color: var(--primary-color);
       letter-spacing: 0.3px;
+      border-radius: 8px;
     }
 
     .search-input::placeholder {
@@ -88,12 +89,14 @@
       opacity: 0.8;
     }
 
+    .search-bar-top {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
     .search-button {
-      position: absolute;
-      right: 0;
-      top: 0;
-      height: 100%;
-      padding: 0 2.8rem;
+      padding: 1.1rem 1.1rem;
       background: var(--primary-color);
       color: #ffffff;
       border: none;
@@ -102,13 +105,32 @@
       font-weight: 600;
       letter-spacing: 0.5px;
       transition: background 0.25s ease;
+      border-radius: 8px;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.5rem;
+      white-space: nowrap; /*不换行*/
     }
 
     .search-button:hover {
       background: #2d2d2f;
+    }
+
+    .filter-toggle {
+      padding: 1.1rem 1.1rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .filter-toggle:hover {
+      background: #2d2d2f
     }
 
     .features {
@@ -185,7 +207,7 @@
     .help-icon:hover .tooltip {
       display: block;
     }
-
+ 
     .time-container {
       margin-top: auto;
       padding: 2rem 0;
@@ -219,18 +241,18 @@
         margin-bottom: 2.5rem;
       }
 
-      .search-box {
-        border-radius: 8px;
-      }
-
-      .search-input {
-        padding: 1.2rem 1.8rem;
-        font-size: 1rem;
+      .search-bar-top {
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .search-button {
-        padding: 0 1.8rem;
-        font-size: 0.95rem;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .filter-toggle {
+        width: 100%;
       }
 
       .features {
@@ -250,9 +272,8 @@
     <i class="fas fa-question-circle"></i>
     <div class="tooltip">
       欢迎使用 FinancialToolBox！<br>
-      - 输入关键词或公司名称即可搜索<br>
-      - 点击“开始分析”按钮获取结果<br>
-      - 功能包括：实时行情、行业资讯和宏观经济数据
+      - 若要检索政策文件，请在点击筛选来源后输入“政策库”。<br>
+      - 由于所使用的聚宽数据api未开通会员，股市指数数据无法实时更新，请见谅。
     </div>
   </div>
 
@@ -261,11 +282,20 @@
 
     <div class="search-container">
       <form action="/search" method="post" class="search-box">
-        <input type="text" name="query" class="search-input" placeholder="输入股票代码/公司名称/财经关键词..." autocomplete="off" required>
-        <button type="submit" class="search-button">
-          <i class="fas fa-chart-line"></i>
-          开始分析
-        </button>
+        <div class="search-bar-top">
+          <button type="button" class="filter-toggle" onclick="toggleSourceInput()">
+            <i class="fas fa-caret-down" style="margin-right:6px;"></i>筛选来源
+          </button>
+          <input type="text" name="query" class="search-input" placeholder="输入股票代码/公司名称/财经关键词..." autocomplete="off" required>
+          <button type="submit" class="search-button">
+            <i class="fas fa-chart-line" ></i>
+            搜索一下
+          </button>
+        </div>
+
+        <div id="source-field" style="display: none;">
+          <input type="text" name="source" class="search-input" placeholder="输入来源名称，如 新华社、央视新闻 等...">
+        </div>
       </form>
     </div>
 
@@ -308,6 +338,11 @@
         `${formatTimeUnit(now.getMinutes())}:` +
         `${formatTimeUnit(now.getSeconds())}`;
       document.getElementById('current-time').textContent = formattedDate;
+    }
+
+    function toggleSourceInput() {
+      const sourceField = document.getElementById('source-field');
+      sourceField.style.display = sourceField.style.display === 'none' ? 'block' : 'none';
     }
 
     updateTime();

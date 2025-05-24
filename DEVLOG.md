@@ -206,3 +206,4 @@
 ### 改动
 
 - 修改了较多代码,初步实现了主页下方三个模块的基本功能。
+- 修改/engine/searchEngine.py的search函数和/templates/index.html文件，添加筛选来源功能。
